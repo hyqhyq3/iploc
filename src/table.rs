@@ -2,9 +2,10 @@ extern crate hyper;
 use self::hyper::Client;
 use std::io;
 use std::io::{Read, Write};
-use std::fs::File;
+use std::fs::{create_dir_all,File};
 use std::path::Path;
 use util::ToUl;
+use std::env;
 
 struct Record {
     start: u32,
@@ -14,8 +15,8 @@ struct Record {
 
 pub struct IpTable {
     records: Vec<Record>,
-    filename: &'static str,
-    url: &'static str,
+    filename: String,
+    url: String,
 }
 
 fn get_content(url: &str) -> hyper::Result<String> {
@@ -35,20 +36,24 @@ fn file_get_content(file: &str) -> Result<String, io::Error> {
 
 impl IpTable {
     pub fn new() -> IpTable {
+        let mut filename = env::home_dir().unwrap();
+        filename.push(".iploc");
+        create_dir_all(filename.as_path()).unwrap();
+        filename.push("data.txt");
         IpTable {
             records: vec![],
-            filename: "data.txt",
-            url: "http://ftp.apnic.net/stats/apnic/delegated-apnic-latest",
+            filename:  filename.to_str().unwrap().to_string(),
+            url: "http://ftp.apnic.net/stats/apnic/delegated-apnic-latest".to_string(),
         }
     }
 
     pub fn init(&mut self) {
-        if !Path::new(self.filename).exists() {
-            let body = get_content(self.url).unwrap();
-            let mut file = File::create(self.filename).unwrap();
+        if !Path::new(&self.filename).exists() {
+            let body = get_content(&self.url).unwrap();
+            let mut file = File::create(&self.filename).unwrap();
             file.write_all(body.as_bytes()).unwrap();
         }
-        let content = file_get_content(self.filename).unwrap();
+        let content = file_get_content(&self.filename).unwrap();
         let lines = content.lines();
         for line in lines {
             match line.starts_with('#') {
