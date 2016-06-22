@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["hyq <i@hyq.me>"]
 description = "get ip location"
 repository = "https://github.com/hyqhyq3/iploc"
-license = "GPLv2"
+license = "Apache-2.0"
 
 [[bin]]
 name = "iploc"
